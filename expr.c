@@ -80,7 +80,9 @@ int tcl_cmd_expr(struct tcl *tcl, tcl_value_t *args, void *arg) {
 	free(var);
 	char tmp[64];
 
-	if (ceilf(expr_ret) != expr_ret) {
+	if (expr_ret == INFINITY) {
+		snprintf(tmp, sizeof(tmp)-1, "infinity");
+	} else if (ceilf(expr_ret) != expr_ret) {
 		snprintf(tmp, sizeof(tmp)-1, "%f", expr_ret);
 		tmp[strlen(tmp) - 4] = '\0';			// Limit the output to two decimal places
 	} else
