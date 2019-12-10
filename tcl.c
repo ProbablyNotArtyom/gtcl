@@ -18,8 +18,7 @@ const char const tcl_help_txt[] = {
 };
 
 extern struct tcl_cmd_builtin builtin_commands[];
-bool interactive = false;
-bool doExit = false, debug = false;
+bool interactive = false, doExit = false, debug = false;
 int docmd = NULL;
 
 //----------------------Main-------------------------
@@ -29,43 +28,48 @@ int main(int argc, char *argv[]){
 
 	/* Default to starting in interactive mode if no args are passed */
 	if (argc <= 1) interactive = true;
-	for (int i = 1; i < argc; i++){
-		if (argv[i][0] == '-'){
-			switch (argv[i][1]){
-				case 'h':
-					puts(tcl_help_txt);
-					return 0;
-				default:
-				case 'i':
-					interactive = true;
-					break;
-				case 'c':
-					if (i < argc - 1) {
-						docmd = i;
-						i++;
-					} else {
-						printf("[?] No command specified\n");
-						return;
-					}
-					break;
-				case 'd':
-					debug = true;
-					break;
+	else {
+		for (int i = 1; i < argc; i++){
+			if (argv[i][0] == '-'){
+				switch (argv[i][1]){
+					case 'h':
+						puts(tcl_help_txt);
+						return 0;
+					default:
+					case 'i':
+						interactive = true;
+						break;
+					case 'c':
+						if (i < argc - 1) {
+							docmd = i;
+							i++;
+						} else {
+							printf("[?] No command specified\n");
+							return;
+						}
+						break;
+					case 'd':
+						debug = true;
+						break;
+				}
+			} else {
+				file = fopen(argv[i], "rb");
+				if (file == NULL) {
+					printf("[?] File could not be found\n");
+					return -1;
+				}
+				fseek(file, 0, SEEK_SET);
 			}
-		} else {
-			file = fopen(argv[i], "rb");
-			if (file == NULL) {
-				printf("[?] File could not be found\n");
-				return -1;
-			}
-			fseek(file, 0, SEEK_SET);
 		}
 	}
 
 	struct tcl tcl;
 	tcl_init(&tcl);
 
-	if (docmd != NULL) {
+	if (interactive) {
+		printf("TCL Command Shell v0.8\n");
+		printf("NotArtyom 6/10/19\n");
+	} else if (docmd != NULL) {
 		if (tcl_eval(&tcl, argv[docmd+1], strlen(argv[docmd+1])+1) != FERROR) {
     		if (*(tcl.result) != '\0') printf("> %s\n", tcl_string(tcl.result));
 		} else {
@@ -74,9 +78,6 @@ int main(int argc, char *argv[]){
 		tcl_destroy(&tcl);
 		return;
 	}
-
-	printf("TCL Command Shell v0.8\n");
-	printf("NotArtyom 6/10/19\n");
 
 	int buffer_length = 1024;
 	char *buff = malloc(buffer_length);
